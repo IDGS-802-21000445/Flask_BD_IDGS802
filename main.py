@@ -3,6 +3,7 @@ from flask_wtf.csrf import CSRFProtect
 from config import DevelopmentConfig
 from flask import flash,g
 from models import db
+from models import Alumnos
 import forms
 
 app = Flask(__name__)
@@ -13,9 +14,26 @@ csrf=CSRFProtect()
 def page_not_found(e):
     return render_template("404.html"),404
 
-@app.route("/")
+@app.route("/index", methods=["GET","POST"])
 def index():
-    return render_template("index.html")
+    alum_form  =forms.UserForm2(request.form)
+    
+    if request.method == 'POST':
+        alum = Alumnos(nombre=alum_form.nombre.data,
+                   apaterno=alum_form.apaterno.data,
+                   email=alum_form.email.data)
+        #insert into alumnos values()
+        db.session.add(alum)
+        db.session.commit()
+    return render_template("index.html",form=alum_form)
+
+@app.route("/ABC_Completo", methods=["GET","POST"])
+def ABCompleto():
+    alum_form  =forms.UserForm2(request.form)
+    alumno=Alumnos.query.all()
+
+
+    return render_template("/ABC_Completo.html",alumno=alumno)
 
 @app.route("/alumnos", methods=["GET","POST"])
 def alumnos():
@@ -32,7 +50,7 @@ def alumnos():
         print("nombre: {}".format(nom))
         print("apterno: {}".format(apa))
         print("amaterno: {}".format(ama))
-
+            
 #archivo_texto.write('\n datos en el archivo')
     return render_template("alumnos.html", form=alum_form,nom=nom,apa=apa,ama=ama)
 
